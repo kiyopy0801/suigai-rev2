@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>小金井市 水害サバイバルクイズ</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  body{font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic","Meiryo",sans-serif;background:#0b2a45;color:#1d2b36;min-height:100vh}
+  button{-webkit-appearance:none;appearance:none;color:inherit}
+  ruby rt{font-size:.5em;font-weight:normal;letter-spacing:0}
+  .app{max-width:1000px;margin:0 auto;padding:18px;min-height:100vh;display:flex;flex-direction:column}
+  .screen{display:none;flex:1;flex-direction:column;animation:fade .35s ease}
+  .screen.active{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .card{background:#fff;border-radius:18px;padding:22px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  h1{font-size:34px;color:#fff;text-align:center;line-height:1.5}
+  .sub{color:#cfe3f5;text-align:center;font-size:18px;margin:10px 0 18px;line-height:1.9}
+  .start-hero{border-radius:18px;overflow:hidden;margin-bottom:18px;line-height:0}
+  .btn{display:block;width:100%;border:none;border-radius:14px;font-size:22px;font-weight:bold;padding:18px;cursor:pointer;font-family:inherit}
+  .btn-primary{background:#ff8a00;color:#fff;box-shadow:0 5px 0 #c26900}
+  .btn-primary:active{transform:translateY(3px);box-shadow:0 2px 0 #c26900}
+  .lv-label{color:#fff;font-size:22px;font-weight:bold;text-align:center;margin:4px 0 12px}
+  .lv-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .lv-btn{border:none;border-radius:18px;padding:20px 12px;cursor:pointer;font-family:inherit;text-align:center;line-height:1.5}
+  .lv-btn .n{font-size:30px;font-weight:900;display:block}
+  .lv-btn .d{font-size:15px;display:block;margin-top:6px}
+  .lv-easy{background:#38b000;color:#fff;-webkit-text-fill-color:#fff;box-shadow:0 6px 0 #237000}
+  .lv-hard{background:#d62828;color:#fff;-webkit-text-fill-color:#fff;box-shadow:0 6px 0 #8b0000}
+  .lv-btn:active{transform:translateY(4px);box-shadow:none}
+  .lvtag{display:inline-block;font-size:16px;padding:3px 12px;border-radius:16px;color:#fff;margin-bottom:6px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+  .sc-btn{background:#fff;border:4px solid transparent;border-radius:16px;padding:18px 10px;text-align:center;cursor:pointer;font-family:inherit;transition:.15s;color:#0b2a45}
+  .sc-btn:active{border-color:#ff8a00;transform:scale(.97)}
+  .sc-btn .ic{font-size:52px}
+  .sc-btn .t{font-size:21px;font-weight:bold;margin-top:6px;color:#0b2a45;-webkit-text-fill-color:#0b2a45;line-height:1.7}
+  .sc-btn .d{font-size:14px;color:#3d4f61;-webkit-text-fill-color:#3d4f61;margin-top:4px;line-height:1.7}
+  .back{background:none;border:none;color:#9db7cf;font-size:17px;margin-top:16px;cursor:pointer;font-family:inherit;text-decoration:underline}
+  .topbar{display:flex;align-items:center;justify-content:space-between;color:#fff;margin-bottom:10px;gap:10px}
+  .topbar .sc{font-size:18px;font-weight:bold}
+  .progress{flex:1;height:12px;background:rgba(255,255,255,.2);border-radius:6px;overflow:hidden;max-width:380px}
+  .progress div{height:100%;background:#ff8a00;transition:width .4s}
+  .qno{font-size:18px;font-weight:bold;white-space:nowrap}
+  .snd{background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.4);color:#fff;-webkit-text-fill-color:#fff;border-radius:22px;padding:6px 12px;font-size:16px;font-family:inherit;cursor:pointer;white-space:nowrap}
+  .scene{width:100%;border-radius:16px;overflow:hidden;background:#000;line-height:0;position:relative}
+  .scene svg,.scene img,.scene video{width:100%;height:auto;display:block}
+  .scene.shake{animation:shake .5s infinite}
+  @keyframes shake{0%,100%{transform:translate(0,0)}25%{transform:translate(-2px,1px)}75%{transform:translate(2px,-1px)}}
+  .rainfall{animation:fall .38s linear infinite}
+  @keyframes fall{from{transform:translate(0,-120px)}to{transform:translate(-40px,0)}}
+  .wave{animation:wave 2.4s linear infinite}
+  .wave.fast{animation-duration:1.1s}
+  @keyframes wave{from{transform:translateX(0)}to{transform:translateX(-80px)}}
+  .bob{animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .blink{animation:blink 1s steps(2) infinite}
+  @keyframes blink{50%{opacity:.35}}
+  .flash{opacity:0;transition:opacity .08s}
+  .flash.on{opacity:.75}
+  .situation{background:#fff6e0;border-left:8px solid #ff8a00;border-radius:10px;padding:12px 16px;margin:14px 0 10px;font-size:19px;line-height:1.9;color:#1d2b36}
+  .question{font-size:24px;font-weight:bold;color:#fff;margin:6px 2px 12px;line-height:1.8}
+  .choices{display:flex;flex-direction:column;gap:12px}
+  /* 選択肢：スマホ（iOS）で青文字にならないよう濃い色を明示 */
+  .choice{background:#fff;border:none;border-radius:14px;padding:18px 18px 18px 64px;font-size:19px;font-weight:600;text-align:left;position:relative;cursor:pointer;font-family:inherit;line-height:1.8;box-shadow:0 4px 0 #9fb3c4;color:#1a1a1a;-webkit-text-fill-color:#1a1a1a}
+  .choice:active{transform:translateY(3px);box-shadow:0 1px 0 #9fb3c4;background:#ffe7c7}
+  .choice .lb{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:#0b2a45;color:#fff;-webkit-text-fill-color:#fff;font-weight:bold;display:flex;align-items:center;justify-content:center;font-size:18px}
+
+  /* ドキドキタイム */
+  #s-drama{justify-content:center}
+  .drama-title{color:#fff;font-size:26px;font-weight:bold;text-align:center;margin-bottom:12px;letter-spacing:.1em;line-height:1.8}
+  .drama-title.beat{animation:beat .8s ease-in-out infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.08)}30%{transform:scale(1)}45%{transform:scale(1.05)}}
+  .drama-wrap{position:relative}
+  .caption{position:absolute;left:0;right:0;bottom:18px;text-align:center;line-height:1.6;pointer-events:none}
+  .caption span{display:inline-block;background:rgba(0,0,0,.6);color:#fff;font-size:32px;font-weight:900;padding:8px 26px;border-radius:12px;opacity:0;animation:capin .8s ease forwards .6s}
+  @keyframes capin{to{opacity:1}}
+  .rise{animation:rise 3.8s cubic-bezier(.5,0,.8,.6) forwards}
+  @keyframes rise{from{transform:translateY(0)}to{transform:translateY(-340px)}}
+  .fadeout{animation:fadeout 3s ease forwards}
+  @keyframes fadeout{to{opacity:0}}
+  .fadein{opacity:0;animation:fadein 2s ease forwards 1.2s}
+  @keyframes fadein{to{opacity:1}}
+  .drift{animation:drift 6s ease-out forwards}
+  @keyframes drift{from{transform:translateX(-140px)}to{transform:translateX(70px)}}
+  .rock{animation:rock 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center bottom}
+  @keyframes rock{0%,100%{transform:rotate(-4deg) translateY(0)}50%{transform:rotate(4deg) translateY(-5px)}}
+  .waveArm{animation:waveArm .5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:left bottom}
+  @keyframes waveArm{from{transform:rotate(-25deg)}to{transform:rotate(20deg)}}
+  .float{animation:float 6s ease-in-out forwards}
+  @keyframes float{from{transform:translate(-60px,-30px)}to{transform:translate(80px,30px)}}
+  .spin{animation:spin 9s linear infinite;transform-box:fill-box;transform-origin:center}
+  @keyframes spin{from{transform:rotate(-20deg)}to{transform:rotate(30deg)}}
+  .swimR{animation:swimR linear infinite}
+  .swimL{animation:swimL linear infinite}
+  @keyframes swimR{from{transform:translateX(-120px)}to{transform:translateX(780px)}}
+  @keyframes swimL{from{transform:translateX(780px)}to{transform:translateX(-120px)}}
+  .bubble{animation:bubble linear infinite}
+  @keyframes bubble{from{transform:translateY(0);opacity:.8}to{transform:translateY(-380px);opacity:0}}
+  .sway{animation:sway 3s ease-in-out infinite alternate}
+  @keyframes sway{from{opacity:.05}to{opacity:.16}}
+  .darken{opacity:0;animation:darken 5.5s ease forwards .5s}
+  @keyframes darken{to{opacity:.5}}
+
+  .result-head{text-align:center;padding:26px 16px;border-radius:18px;color:#fff}
+  .pass{background:linear-gradient(135deg,#1e9e5a,#38c172)}
+  .fail{background:linear-gradient(135deg,#8b0000,#d62828);animation:pulse 1.6s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(214,40,40,.7)}50%{box-shadow:0 0 0 14px rgba(214,40,40,0)}}
+  .score{font-size:84px;font-weight:900;line-height:1}
+  .score small{font-size:30px}
+  .verdict{font-size:30px;font-weight:bold;margin-top:8px;line-height:1.7}
+  .warn{font-size:19px;margin-top:10px;line-height:1.9}
+  .review{margin-top:16px}
+  .review h3{font-size:21px;margin-bottom:10px;color:#0b2a45;line-height:1.8}
+  .rv{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #e3e8ee;font-size:17px;line-height:1.9;color:#1d2b36}
+  .rv:last-child{border-bottom:none}
+  .mk{flex:0 0 46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#fff}
+  .mk.g{background:#1e9e5a}.mk.m{background:#f0a500}.mk.b{background:#d62828}
+  .rv b{color:#0b2a45}
+  .adv{color:#a33a00}
+  .btn-row{display:flex;gap:12px;margin-top:18px}
+  .btn-sub{background:#e3e8ee;color:#0b2a45;-webkit-text-fill-color:#0b2a45;box-shadow:0 5px 0 #b3c0cc}
+  .btn-primary{-webkit-text-fill-color:#fff}
+  .note{color:#9db7cf;font-size:13px;text-align:center;margin-top:16px;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- スタート画面（レベル選択） -->
+  <section class="screen active" id="s-start">
+    <h1>🌧️ 小金井市<br>水害サバイバルクイズ</h1>
+    <p class="sub">大雨が降ってきた！ あなたは生きのびられる？　🔊 音が出ます</p>
+    <div class="start-hero" id="hero"></div>
+    <div class="lv-label">レベルを選んでスタート！</div>
+    <div class="lv-row">
+      <button class="lv-btn lv-easy" onclick="chooseLevel('easy')"><span class="n">初級編</span><span class="d">しょうがくせい・ちゅうがくせい むけ<br>ひらがなで よめる</span></button>
+      <button class="lv-btn lv-hard" onclick="chooseLevel('hard')"><span class="n">上級編</span><span class="d">高校生・大人向け<br>悩ましい選択肢</span></button>
+    </div>
+    <p class="note">※ 本クイズの場面・数値は学習用のイメージです。実際の災害時は小金井市・気象庁などの最新情報に従ってください。</p>
+  </section>
+
+  <!-- シチュエーション選択 -->
+  <section class="screen" id="s-select">
+    <div style="text-align:center"><span class="lvtag" id="sel-tag"></span></div>
+    <h1 style="font-size:28px" id="sel-h"></h1>
+    <p class="sub" id="sel-sub"></p>
+    <div class="grid" id="sc-grid"></div>
+    <button class="back" id="sel-back" onclick="go('s-start')"></button>
+  </section>
+
+  <!-- 設問画面 -->
+  <section class="screen" id="s-quiz">
+    <div class="topbar">
+      <div class="sc" id="q-sc"></div>
+      <div class="progress"><div id="q-bar"></div></div>
+      <div class="qno" id="q-no"></div>
+      <button class="snd" id="snd-btn" onclick="toggleSound()">🔊 音あり</button>
+    </div>
+    <div class="scene" id="q-scene"></div>
+    <div class="situation" id="q-sit"></div>
+    <div class="question" id="q-text"></div>
+    <div class="choices" id="q-choices"></div>
+  </section>
+
+  <!-- ドキドキタイム -->
+  <section class="screen" id="s-drama">
+    <div class="drama-title beat" id="d-title"></div>
+    <div class="drama-wrap">
+      <div class="scene" id="d-scene"></div>
+      <div class="caption" id="d-cap"></div>
+    </div>
+  </section>
+
+  <!-- 評価画面 -->
+  <section class="screen" id="s-result">
+    <div class="result-head" id="r-head"></div>
+    <div class="card review">
+      <h3 id="r-h3"></h3>
+      <div id="r-list"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-sub" id="r-again" onclick="go('s-select')"></button>
+      <button class="btn btn-primary" id="r-top" onclick="go('s-start')"></button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* =========================================================
+   ▼ 動画の設定（任意）
+   「シチュエーションID-問題番号」に動画ファイルを指定すると、その問題では
+   イラストの代わりに動画（音声付き）を再生します（初級編・上級編共通）。
+   シチュエーションID： home / car / office / school / park
+   例） "home-3": "videos/home_q3.mp4",
+   ドキドキタイム： "flood"=洪水 / "happy"=生存 / "bad"=サバイバル失敗
+   ========================================================= */
+const VIDEOS = {
+  // "home-3": "videos/home_q3.mp4",
+  // "flood": "videos/flood.mp4",
+  // "happy": "videos/happy_end.mp4",
+  // "bad":   "videos/bad_end.mp4",
+};
+
+/* ▼ ドキドキタイムの長さ（ミリ秒）：洪水 4秒 ＋ 生存／失敗 6秒 ＝ 10秒後に結果画面 */
+const DRAMA_FLOOD_MS = 4000;
+const DRAMA_END_MS   = 6000;
+
+/* ふりがな記法：漢字《かんじ》 → ルビ表示 */
+function rb(s){return String(s).replace(/([\u4E00-\u9FFF々〆]+)《([^》]+)》/g,'<ruby>$1<rt>$2</rt></ruby>');}
+
+/* 画面の文言（初級編はふりがな付き） */
+const UI = {
+  easy:{tag:"しょきゅうへん",tagc:"#38b000",selH:"いま、どこに いる？",
+    selSub:"ばめんを 1つ えらんでね<br>（ぜんぶで 5もん・100てん まんてん・60てん いじょうで ごうかく）",
+    back:"← レベル えらびに もどる",qno:(i,n)=>`${i}もんめ / ${n}`,
+    fate:"あなたの うんめいは…",saved:"🛟 たすかった…！",lost:"🌊 …",
+    capOK:"せいぞん！",capNG:"サバイバル しっぱい・・・",
+    unit:"てん",perfect:"🏅 まんてん！ ぼうさい マスター",ok:"✅ ごうかく！ いきのびました",
+    ng:"⚠️ ふごうかく<br>いのちを おとす キケンが あります",
+    okMsg:"あんぜんな こうどうが できました！ したの ポイントも みて おこう。",
+    ngMsg:"ほんとうの すいがいだったら <b>いのちが あぶない</b> かも。<br>したの ポイントを みて、もう いちど チャレンジ しよう！",
+    h3:"ふりかえりポイント",ans:"あなたの こたえ",correct:"せいかい！",best:"せいかいは",
+    q:"",qq:"もんめ",again:"ほかの ばめんに チャレンジ",top:"さいしょの がめんへ"},
+  hard:{tag:"上級編",tagc:"#d62828",selH:"あなたはいま、どこにいる？",
+    selSub:"シチュエーションを1つ選んでください<br>（全5問・100点満点・60点以上で合格）",
+    back:"← レベル選択にもどる",qno:(i,n)=>`第${i}問 / ${n}`,
+    fate:"あなたの運命は…",saved:"🛟 助かった…！",lost:"🌊 …",
+    capOK:"生存！",capNG:"サバイバル失敗・・・",
+    unit:"点",perfect:"🏅 満点！ 防災マスター",ok:"✅ 合格！ 生きのびました",
+    ng:"⚠️ 不合格 ― 命を落とす危険が高い状態です",
+    okMsg:"安全な行動がとれていました。下のアドバイスも確認して、さらに備えを高めましょう。",
+    ngMsg:"今回の行動では、実際の水害で<b>命を落とすリスクが高まります</b>。<br>下のアドバイスを確認し、もう一度挑戦してみましょう。",
+    h3:"ふりかえりと安全な行動のアドバイス",ans:"あなたの答え",correct:"正解！",best:"最も安全な行動",
+    q:"第",qq:"問",again:"別のシチュエーションに挑戦",top:"最初の画面へ"}
+};
+
+/* =========================================================
+   上級編 設問データ（s: 2=○ 20点 / 1=△ 10点 / 0=× 0点）
+   ========================================================= */
+const ALERT = {
+  warn:{t:"大雨警報 発表",c:"#e8a200"},
+  l3:{t:"警戒レベル3 高齢者等避難",c:"#d62828"},
+  l4:{t:"警戒レベル4 避難指示",c:"#7b2cbf"},
+  stop:{t:"雨は弱まりました",c:"#2a7fba"}
+};
+
+const HARD = [
+ {id:"home",icon:"🏠",title:"自宅にいるとき",desc:"2階建ての家で家族と過ごしている",
+  q:[
+   {sit:"夕方、雨が強くなり、小金井市に<b>大雨警報</b>が発表されました。夜にかけてさらに強まる予報です。",
+    q:"まず何をする？",scene:{type:"house",rain:2,depth:0,alert:"warn",extra:["hazard"]},
+    tip:"備えも大切ですが、最優先は「いつ・どこへ逃げるか」を決めておくことです。大雨の中で側溝や水路の様子を見に外へ出て、被害に遭う事例があります。",
+    c:[{t:"ハザードマップで自宅の浸水想定と避難先を確認し、どの段階で避難するかを家族で決める",s:2},
+       {t:"停電に備えて懐中電灯やスマホを充電し、非常持ち出し袋を玄関に置いておく",s:1},
+       {t:"雨がもっと強くなる前に、家の前の側溝や雨どいの詰まりを外に出て掃除しておく",s:0}]},
+   {sit:"夜7時、<b>警戒レベル3（高齢者等避難）</b>が発令されました。家には足の弱いおばあちゃんがいます。",
+    q:"どうする？",scene:{type:"house",rain:3,depth:0,alert:"l3",extra:["grandma"]},
+    tip:"レベル3は、高齢者など避難に時間がかかる人が避難を始める段階です。避難指示（レベル4）を待つと、さらに暗く雨の強い中での移動になります。",
+    c:[{t:"おばあちゃんを連れて、まだ動けるうちに親戚の家や避難所へ移動を始める",s:2},
+       {t:"おばあちゃんを2階の寝室に移し、家族は避難指示が出たらすぐ動けるよう準備する",s:1},
+       {t:"夜道の移動は危ないので、避難指示が出るまで全員で1階のリビングで様子を見る",s:0}]},
+   {sit:"<b>警戒レベル4（避難指示）</b>が発令。家の前の道路は<b>水深 約15cm</b>。ハザードマップでは自宅付近は<b>最大2〜3mの浸水想定</b>です。",
+    q:"どうする？",scene:{type:"house",rain:4,depth:15,alert:"l4",extra:[]},
+    tip:"想定浸水が深い場所では、2階でも浸かるおそれがあります。水が浅く流れのないうちに、安全な場所へ移りましょう。車は水深30cm程度でも動けなくなることがあります。",
+    c:[{t:"水が浅く流れもないうちに、家族で歩いて近くの避難所へ向かう",s:2},
+       {t:"外は危ないので、家族全員で自宅の2階に上がって様子を見る",s:1},
+       {t:"おばあちゃんを歩かせるのは大変なので、車に乗せて避難所へ向かう",s:0}]},
+   {sit:"避難が遅れてしまいました。外は<b>水深 約40cm</b>で、水に流れも出てきています。",
+    q:"どうする？",scene:{type:"house",rain:4,depth:40,alert:"l4",extra:[]},
+    tip:"流れのある水は、膝くらいの深さでも大人が足をとられます。家族で体を結んでも、全員が流される危険が高まるだけです。外へ出ず、すぐに上の階で救助を求めましょう。",
+    c:[{t:"すぐに2階以上へ上がり、119番や家族に居場所を伝えて救助を待つ",s:2},
+       {t:"1階の貴重品や家電を2階へ運び上げてから、2階に避難する",s:1},
+       {t:"はぐれないように家族の体をひもで結び、みんなで避難所まで歩く",s:0}]},
+   {sit:"雨がやみ、水が引き始めました。1階は泥だらけで、電気は止まっています。",
+    q:"片付けの前に何をする？",scene:{type:"house",rain:0,depth:5,alert:"stop",extra:["breaker"]},
+    tip:"浸水した電気設備は、通電すると感電や火災のおそれがあります。片付ける前に被害を写真で残しておくと、罹災証明書の申請や保険請求に役立ちます。",
+    c:[{t:"ブレーカーを落としたまま、片付ける前に家の内外の被害を写真で記録する",s:2},
+       {t:"ブレーカーを落としてから、衛生のためにすぐ泥を掃き出して消毒する",s:1},
+       {t:"暗くて作業できないので、ブレーカーを上げて電気がつくか確認する",s:0}]}
+  ]},
+ {id:"car",icon:"🚗",title:"運転しているとき",desc:"市内を車で走っている",
+  q:[
+   {sit:"運転中、ラジオで小金井市に<b>大雨警報</b>が発表されたと知りました。",
+    q:"どうする？",scene:{type:"car",rain:2,depth:0,alert:"warn",extra:[]},
+    tip:"大雨の中の運転は視界が悪く、道路が急に冠水することもあります。川沿いや低い道は避け、早めに安全な場所へ向かいましょう。",
+    c:[{t:"目的地を変更し、浸水しにくい高い場所にある大きな施設の駐車場などへ向かう",s:2},
+       {t:"スピードを落とし、ライトをつけて慎重に予定どおり目的地へ向かう",s:1},
+       {t:"大通りの渋滞を避けるため、川沿いの抜け道を使って早く帰る",s:0}]},
+   {sit:"<b>警戒レベル3</b>発令。この先の<b>アンダーパス（立体交差の下の道）が冠水</b>しています。",
+    q:"どうする？",scene:{type:"underpass",rain:3,depth:0,alert:"l3",extra:[]},
+    tip:"アンダーパスは見た目より深く冠水していることがあり、車が動けなくなって閉じ込められる事故が起きています。低い場所で停まって待つのも危険です。",
+    c:[{t:"アンダーパスには入らず、引き返して高い道を通る迂回ルートを探す",s:2},
+       {t:"近くの路肩に車を止め、水が引くまで車内で様子を見る",s:1},
+       {t:"前を走る車高の高いSUVが通れたので、ゆっくり後について通る",s:0}]},
+   {sit:"<b>警戒レベル4（避難指示）</b>発令。走っている道路が<b>水深 約15cm</b>になってきました。",
+    q:"どうする？",scene:{type:"car",rain:4,depth:15,alert:"l4",extra:[]},
+    tip:"水深が増えるとエンジンが止まり、車ごと流されることもあります。車にこだわらず、冠水していない高い場所に車を置き、頑丈な建物へ避難しましょう。",
+    c:[{t:"冠水していない高い場所に車を止め、車を置いて近くの頑丈な建物へ避難する",s:2},
+       {t:"水が浅いうちに、ゆっくり一定の速さで走って冠水区間を抜ける",s:1},
+       {t:"車の中なら雨にぬれず安全なので、その場に停車して雨が弱まるのを待つ",s:0}]},
+   {sit:"水が車の<b>床下近く</b>まで来て、<b>エンジンが止まって</b>しまいました。",
+    q:"どうする？",scene:{type:"car",rain:4,depth:40,alert:"l4",extra:["stall"]},
+    tip:"水位が上がると、水圧でドアが開かなくなります。開くうちにすぐ脱出しましょう。エンジンの再始動は故障や車両火災の原因になります。",
+    c:[{t:"すぐにドアを開けて車を降り、流れに注意しながら高い場所へ移動する",s:2},
+       {t:"窓を少し開けて脱出口を確保し、119番に通報して車内で救助を待つ",s:1},
+       {t:"レッカー代がかかるので、エンジンをかけ直して自力で抜け出そうとする",s:0}]},
+   {sit:"雨が弱まり水が引きました。車は冠水してしまっています。",
+    q:"どうする？",scene:{type:"car",rain:0,depth:5,alert:"stop",extra:[]},
+    tip:"冠水した車は、エンジンをかけたり電気を通したりすると、故障や車両火災につながるおそれがあります。自分で動かさず、専門家に任せましょう。",
+    c:[{t:"エンジンをかけずに、販売店や保険会社、ロードサービスに連絡する",s:2},
+       {t:"十分に乾くまで数日待ってから、エンジンがかかるか試してみる",s:1},
+       {t:"車内を早く乾かすため、エンジンをかけてエアコンを全開にする",s:0}]}
+  ]},
+ {id:"office",icon:"🏢",title:"職場にいるとき",desc:"オフィスで仕事中",
+  q:[
+   {sit:"勤務中、小金井市に<b>大雨警報</b>が発表されました。夕方の帰宅時間に雨のピークが重なる予報です。",
+    q:"どうする？",scene:{type:"office",rain:2,depth:0,alert:"warn",extra:["hazard"]},
+    tip:"自分の判断で動く前に、まず会社のルールと帰宅ルートの危険を確認しましょう。混雑を避けようと独断で動くと、豪雨のピークや危険な道に巻き込まれるおそれがあります。",
+    c:[{t:"会社の防災ルールを確認し、帰宅ルートに浸水しやすい場所がないか調べる",s:2},
+       {t:"家族に連絡して、自宅周辺の様子と家族の居場所を確認しておく",s:1},
+       {t:"道路が混む前に、仕事を早めに切り上げていつもの道を車で帰る",s:0}]},
+   {sit:"<b>警戒レベル3</b>が発令。電車にも遅れが出始めています。",
+    q:"帰宅はどうする？",scene:{type:"office",rain:3,depth:0,alert:"l3",extra:[]},
+    tip:"状況が悪くなってから動くと、帰宅途中で足止めされるおそれがあります。会社の判断に従い、帰るなら安全なうちに、危ないなら職場にとどまりましょう。",
+    c:[{t:"会社の判断に従い、安全なうちに早めに帰るか、職場にとどまるかを決める",s:2},
+       {t:"電車の運行状況を確認し続け、運転見合わせになったら帰宅を考える",s:1},
+       {t:"電車が止まる前に駅へ着けるよう、川沿いの近道を急いで歩く",s:0}]},
+   {sit:"<b>警戒レベル4（避難指示）</b>発令。職場の周りは<b>水深 約15cm</b>です。",
+    q:"どうする？",scene:{type:"office",rain:4,depth:15,alert:"l4",extra:[]},
+    tip:"冠水した道は、ふたの外れたマンホールや側溝が見えず危険です。家族が心配でも、無理に帰らず職場の上の階など安全な場所にとどまりましょう。",
+    c:[{t:"無理に帰宅せず、職場の上の階にとどまる",s:2},
+       {t:"水が浅いうちに駅まで行き、電車が動いていれば帰る",s:1},
+       {t:"家族が心配なので、ひざ下の深さなら歩けると判断して家へ向かう",s:0}]},
+   {sit:"水深が<b>約40cm</b>になり、<b>1階に浸水</b>が始まりました。地下には大事な書類を保管する倉庫があります。",
+    q:"どうする？",scene:{type:"office",rain:4,depth:40,alert:"l4",extra:[]},
+    tip:"地下は水が一気に流れ込み、水圧でドアが開かなくなって閉じ込められる危険があります。物より命を優先し、全員で上の階へ避難しましょう。",
+    c:[{t:"1階にいる人に声をかけ、全員で上の階へ避難する",s:2},
+       {t:"浸水を食い止めるため、1階の入口に土のうを積む作業を続ける",s:1},
+       {t:"水が入る前に、地下倉庫の重要書類を急いで取りに行く",s:0}]},
+   {sit:"雨が弱まりました。家族と電話がつながりません。",
+    q:"どうする？",scene:{type:"office",rain:0,depth:5,alert:"stop",extra:["phone"]},
+    tip:"災害時は電話がつながりにくくなります。災害用伝言ダイヤル（171）や伝言板、SNSを使いましょう。雨が弱まっても、道路はまだ冠水していることがあります。",
+    c:[{t:"災害用伝言ダイヤル（171）やSNSで、家族の安否を確認したり伝言を残したりする",s:2},
+       {t:"家族の勤務先や学校に電話をかけて、居場所を問い合わせる",s:1},
+       {t:"雨が弱まったので、今のうちに歩いて家へ向かう",s:0}]}
+  ]},
+ {id:"school",icon:"🏫",title:"学校にいるとき",desc:"授業を受けている",
+  q:[
+   {sit:"授業中、小金井市に<b>大雨警報</b>が発表されました。",
+    q:"どうする？",scene:{type:"school",rain:2,depth:0,alert:"warn",extra:[]},
+    tip:"学校では先生の指示に従うことが一番の安全策です。自分の判断で家族に迎えを頼むと、家族が危ない道を通って来ることになるかもしれません。",
+    c:[{t:"先生の指示を聞き、自分の判断で行動しない",s:2},
+       {t:"スマホで家族に連絡して、迎えに来てもらうよう頼む",s:1},
+       {t:"雨がひどくなる前に、休み時間のうちに急いで一人で帰る",s:0}]},
+   {sit:"<b>警戒レベル3</b>が発令。下校をどうするか決める時間です。",
+    q:"どうする？",scene:{type:"school",rain:3,depth:0,alert:"l3",extra:[]},
+    tip:"友達と一緒でも、大雨の中の下校は危険です。学校の指示に従い、保護者のお迎えや学校での待機を待ちましょう。",
+    c:[{t:"学校の指示に従い、保護者のお迎えか、学校での待機を待つ",s:2},
+       {t:"一人は危ないので、友達とまとまっていつもの通学路で帰る",s:1},
+       {t:"早く家に着けるよう、川沿いの近道を通って帰る",s:0}]},
+   {sit:"<b>警戒レベル4（避難指示）</b>発令。<b>校庭が冠水</b>し始めました（水深 約15cm）。",
+    q:"どうする？",scene:{type:"school",rain:4,depth:15,alert:"l4",extra:[]},
+    tip:"体育館は1階にあることが多く、浸水するおそれがあります。水害のときは校舎の上の階へ逃げるのが基本です。",
+    c:[{t:"先生の指示で、校舎の2階以上へ移動する",s:2},
+       {t:"避難所にもなっている体育館へ移動して待つ",s:1},
+       {t:"迎えに来た家族がすぐ見つけられるよう、昇降口の外で待つ",s:0}]},
+   {sit:"周りの道路は<b>水深 約40cm</b>。お迎えの車が、冠水した道の向こうに着きました。",
+    q:"どうする？",scene:{type:"school",rain:4,depth:40,alert:"l4",extra:[]},
+    tip:"冠水した道を歩いたり、車で通ったりするのは非常に危険です。家族と連絡を取り、学校で一緒に待つようにしましょう。",
+    c:[{t:"家族に連絡して、水が引くまで学校で一緒に待ってもらう",s:2},
+       {t:"先生に伝えてから、水の浅いところを選んで家族の車まで行く",s:1},
+       {t:"家族の車に乗り、冠水した道を通ってそのまま家へ帰る",s:0}]},
+   {sit:"雨が上がり、帰宅できることになりました。",
+    q:"帰り道で気をつけることは？",scene:{type:"school",rain:0,depth:5,alert:"stop",extra:[]},
+    tip:"水が引いた後も、ふたの外れたマンホールや側溝、増水した川は危険です。大人と一緒に、危ない場所を避けて帰りましょう。",
+    c:[{t:"マンホールや側溝、水たまりを避け、先生や家族と一緒に帰る",s:2},
+       {t:"水が引いた道なら安全なので、いつもの道を一人で帰る",s:1},
+       {t:"増水した川がどうなったか気になるので、川沿いを通って帰る",s:0}]}
+  ]},
+ {id:"park",icon:"🌳",title:"公園にいるとき",desc:"川の近くの公園にいる",
+  q:[
+   {sit:"公園にいたら雨が強くなり、<b>大雨警報</b>が発表されました。遠くで雷も鳴っています。",
+    q:"どうする？",scene:{type:"park",rain:2,depth:0,river:1,alert:"warn",extra:[]},
+    tip:"雷が鳴っているときの木の下は、落雷の危険があります。屋根があるだけの場所で待つより、頑丈な建物へ早めに移りましょう。",
+    c:[{t:"すぐに公園を出て、近くの頑丈な建物や自宅へ向かう",s:2},
+       {t:"公園のトイレや屋根のある休憩所で、雨が弱まるのを待つ",s:1},
+       {t:"大きな木の下はぬれにくいので、木の下で雨宿りする",s:0}]},
+   {sit:"<b>警戒レベル3</b>発令。公園の近くの<b>川（野川など）の水位が上がって</b>います。",
+    q:"どうする？",scene:{type:"park",rain:3,depth:0,river:2,alert:"l3",extra:[]},
+    tip:"川は短時間で急に水位が上がることがあります。様子を見たり撮影したりせず、すぐに川から離れましょう。",
+    c:[{t:"すぐに川から離れ、川より高い場所にある建物へ移動する",s:2},
+       {t:"川から十分離れた場所で、水位を見ながら逃げるタイミングを判断する",s:1},
+       {t:"家族に危険を知らせるため、川の様子をスマホで撮影して送る",s:0}]},
+   {sit:"<b>警戒レベル4（避難指示）</b>発令。公園の低い場所が<b>冠水</b>しました（水深 約15cm）。",
+    q:"どうする？",scene:{type:"park",rain:4,depth:15,river:3,alert:"l4",extra:[]},
+    tip:"あずまやは雨はしのげても、水かさが増えると逃げ場がなくなります。冠水していない高い道を通って、避難所や頑丈な建物へ向かいましょう。",
+    c:[{t:"冠水していない高い道を通って、近くの避難所や頑丈な建物へ向かう",s:2},
+       {t:"屋根のあるあずまやに移り、水が引くまで待つ",s:1},
+       {t:"早く公園を出られるよう、近道になる川沿いの遊歩道を通る",s:0}]},
+   {sit:"避難する途中、足元の水深が<b>約30cm</b>になっています。濁っていて足元が見えません。",
+    q:"どうする？",scene:{type:"park",rain:4,depth:30,river:3,alert:"l4",extra:["walker"]},
+    tip:"濁った水の中は、ふたの外れたマンホールや側溝が見えません。傘や棒で足元を確かめながら、建物の壁沿いをゆっくり進みましょう。道の真ん中は特に危険です。",
+    c:[{t:"傘や棒で足元を確かめながら、建物の壁沿いをゆっくり進む",s:2},
+       {t:"はぐれないよう、仲間と手をつないで広い道の真ん中を進む",s:1},
+       {t:"水の中にいる時間を短くするため、走って一気に通り抜ける",s:0}]},
+   {sit:"なんとか<b>避難所</b>に着きました。家には家族が残っているかもしれません。",
+    q:"まず何をする？",scene:{type:"shelter",rain:1,depth:0,alert:"l4",extra:[]},
+    tip:"避難所ではまず受付をして、家族に居場所を伝えましょう。家の様子を見に戻る途中で被害に遭う事例があります。",
+    c:[{t:"受付で名前を伝え、家族に避難先を連絡する",s:2},
+       {t:"まずぬれた服を着替えて体を温め、落ち着いてから受付をする",s:1},
+       {t:"家族が家にいるか心配なので、一度家の様子を見に戻る",s:0}]}
+  ]}
+];
+
+/* =========================================================
+   初級編 設問データ（小中学生向け）
+   ひらがな・カタカナ中心、ことばの あいだに 半角スペース。
+   解説（tip）は 1行で ポイントだけ。
+   イラストは上級編の同じ問題番号のものを使います。
+   s: 2=○ 20点 / 1=△ 10点 / 0=× 0点
+   ========================================================= */
+const EASY = [
+ {id:"home",icon:"🏠",title:"いえに いるとき",desc:"2かいだての いえで かぞくと いっしょ",
+  q:[
+   {sit:"あめが つよく なり、「<b>おおあめ けいほう</b>」が でました。",
+    q:"まず なにを する？",
+    tip:"あめが つよく なる まえに、にげる ばしょを かぞくで きめて おこう！",
+    c:[{t:"かぞくと ハザードマップを みて、にげる ばしょを たしかめる",s:2},
+       {t:"テレビを つけて、ようすを みる",s:1},
+       {t:"そとに でて、かわの ようすを みに いく",s:0}]},
+   {sit:"「<b>けいかい レベル3</b>」が でました。いえには、あしの よわい おばあちゃんが います。",
+    q:"どう する？",
+    tip:"レベル3は「おとしよりは にげはじめて」の あいず。はやめに うごこう！",
+    c:[{t:"おばあちゃんと いっしょに、はやめに にげる",s:2},
+       {t:"にもつを まとめて、つぎの しらせを まつ",s:1},
+       {t:"まだ だいじょうぶ だと おもって、なにも しない",s:0}]},
+   {sit:"「<b>けいかい レベル4</b>」が でました。いえの まえの みちに、くるぶし くらいの みずが たまって います。",
+    q:"どう する？",
+    tip:"みずの なかでは くるまが うごけなく なるよ。にげるなら あるいて！",
+    c:[{t:"みずが あさい うちに、あるいて ひなんじょへ いく",s:2},
+       {t:"いえの 2かいに あがる",s:1},
+       {t:"くるまに のって ひなんじょへ いく",s:0}]},
+   {sit:"にげるのが おくれました。そとは ひざ くらいの みずで、みずが ながれて います。",
+    q:"どう する？",
+    tip:"ながれる みずは おとなでも ながされる。たかい ところで たすけを よぼう！",
+    c:[{t:"2かいより うえに あがって、119ばんで たすけを よぶ",s:2},
+       {t:"1かいで、みずが はいらないように がんばる",s:1},
+       {t:"あるいて ひなんじょへ むかう",s:0}]},
+   {sit:"あめが やんで、みずが ひいて きました。いえの なかは どろだらけ です。",
+    q:"さいしょに する ことは？",
+    tip:"みずに つかった でんきは キケン！ おとなに ブレーカーを きって もらおう。",
+    c:[{t:"おとなに ブレーカーを きって もらい、でんきを つかわない",s:2},
+       {t:"すぐに どろを そうじ する",s:1},
+       {t:"テレビや ゲームの スイッチを いれて みる",s:0}]}
+  ]},
+ {id:"car",icon:"🚗",title:"くるまに のって いるとき",desc:"かぞくが うんてん する くるまに のって いる",
+  q:[
+   {sit:"くるまに のって いる ときに、「<b>おおあめ けいほう</b>」が でました。",
+    q:"うんてん して いる かぞくに、なんと いう？",
+    tip:"かわの ちかくや ひくい みちは、みずが たまりやすいよ。",
+    c:[{t:"「かわや ひくい みちを さけて、はやく あんぜんな ばしょへ いこう」",s:2},
+       {t:"「ゆっくり、きを つけて はしってね」",s:1},
+       {t:"「いそいで、かわ ぞいの ちかみちで かえろう」",s:0}]},
+   {sit:"どうろの したを くぐる みち（アンダーパス）が、みずで いっぱい です。",
+    q:"どう する？",
+    tip:"アンダーパスは みた めより ずっと ふかい！ ぜったいに はいらないで。",
+    c:[{t:"はいらずに、ひきかえして ちがう みちを とおる",s:2},
+       {t:"まえの くるまが とおれたら、ついて いく",s:1},
+       {t:"スピードを だして、いっきに とおりぬける",s:0}]},
+   {sit:"「<b>けいかい レベル4</b>」が でました。はしって いる みちに、みずが たまって きました。",
+    q:"どう する？",
+    tip:"くるまより いのちが だいじ。はやめに くるまを はなれよう！",
+    c:[{t:"みずの ない たかい ばしょに くるまを とめて、じょうぶな たてものへ にげる",s:2},
+       {t:"ゆっくり はしり つづける",s:1},
+       {t:"くるまの なかで じっと まつ",s:0}]},
+   {sit:"くるまの まわりの みずが ふかく なり、エンジンが とまって しまいました。",
+    q:"どう する？",
+    tip:"みずが ふかく なると ドアが あかなく なる。すぐ そとへ！",
+    c:[{t:"すぐに ドアを あけて そとに でて、たかい ばしょへ にげる",s:2},
+       {t:"くるまの なかで たすけを まつ",s:1},
+       {t:"もう いちど、エンジンを かけて みる",s:0}]},
+   {sit:"あめが やみました。くるまは みずに つかって しまいました。",
+    q:"どう する？",
+    tip:"みずに つかった くるまは、エンジンを かけると ひが でる ことも あるよ。",
+    c:[{t:"エンジンを かけずに、くるまの おみせに そうだん する",s:2},
+       {t:"かわくまで まってから、エンジンを かけて みる",s:1},
+       {t:"すぐに エンジンを かけて うごかす",s:0}]}
+  ]},
+ {id:"office",icon:"🏢",title:"かいしゃに いるとき",desc:"おとなに なって、かいしゃで はたらいて いたら？",
+  q:[
+   {sit:"かいしゃで はたらいて いる ときに、「<b>おおあめ けいほう</b>」が でました。",
+    q:"どう する？",
+    tip:"さいがいの ときの ルールと、かえりみちの キケンを はやめに しっておこう。",
+    c:[{t:"かいしゃの ルールと、かえりみちの あぶない ばしょを たしかめる",s:2},
+       {t:"なにか いわれるまで、しごとを つづける",s:1},
+       {t:"きに しないで、いつもどおり はたらく",s:0}]},
+   {sit:"「<b>けいかい レベル3</b>」が でて、でんしゃが おくれ はじめました。",
+    q:"かえりは どう する？",
+    tip:"かえるなら はやめに。あぶないなら かいしゃに のころう。",
+    c:[{t:"かいしゃと そうだん して、はやめに かえるか、のこるかを きめる",s:2},
+       {t:"しごとが おわるまで、ようすを みる",s:1},
+       {t:"かわ ぞいの ちかみちを、いそいで あるいて かえる",s:0}]},
+   {sit:"「<b>けいかい レベル4</b>」が でました。かいしゃの まわりの みちに、みずが たまって います。",
+    q:"どう する？",
+    tip:"にごった みずの したには、あなや みぞが かくれて いるかも！",
+    c:[{t:"むりに かえらず、かいしゃの うえの かいに いる",s:2},
+       {t:"えきまで いって、でんしゃが うごいて いるか みる",s:1},
+       {t:"これくらい なら だいじょうぶ と おもって、あるいて かえる",s:0}]},
+   {sit:"かいしゃの 1かいに みずが はいって きました。ちかには だいじな しょるいが あります。",
+    q:"どう する？",
+    tip:"ちかは とじこめられる キケンが ある。ものより いのちが だいじ！",
+    c:[{t:"みんなに こえを かけて、うえの かいへ にげる",s:2},
+       {t:"1かいの いりぐちに、どのうを つみ つづける",s:1},
+       {t:"ちかへ しょるいを とりに いく",s:0}]},
+   {sit:"あめが よわく なりました。でも、かぞくに でんわが つながりません。",
+    q:"どう する？",
+    tip:"でんわが つながらない ときは「171」で こえの でんごんが できるよ。",
+    c:[{t:"「さいがいよう でんごん ダイヤル 171」に でんごんを のこす",s:2},
+       {t:"つながるまで、でんわを かけ つづける",s:1},
+       {t:"すぐに あるいて いえへ むかう",s:0}]}
+  ]},
+ {id:"school",icon:"🏫",title:"がっこうに いるとき",desc:"じゅぎょうを うけて いる",
+  q:[
+   {sit:"じゅぎょうちゅうに、「<b>おおあめ けいほう</b>」が でました。",
+    q:"どう する？",
+    tip:"がっこうでは、せんせいの はなしを きくのが いちばん あんぜん！",
+    c:[{t:"せんせいの はなしを よく きいて、まつ",s:2},
+       {t:"ともだちと、どう かえるか そうだん する",s:1},
+       {t:"ひとりで さきに かえる",s:0}]},
+   {sit:"「<b>けいかい レベル3</b>」が でました。もうすぐ げこうの じかん です。",
+    q:"どう する？",
+    tip:"おおあめの なかを かえるのは キケン。かわには ぜったい ちかづかない！",
+    c:[{t:"がっこうで、おうちの ひとの おむかえを まつ",s:2},
+       {t:"いつもの みちで、いそいで かえる",s:1},
+       {t:"かえりに、かわの ようすを みに いく",s:0}]},
+   {sit:"「<b>けいかい レベル4</b>」が でました。こうていに みずが たまって きました。",
+    q:"どう する？",
+    tip:"みずから にげる ときは「たかい ところ」へ！",
+    c:[{t:"せんせいと いっしょに、こうしゃの 2かいより うえへ いく",s:2},
+       {t:"たいいくかんで まつ",s:1},
+       {t:"こうていの みずで あそぶ",s:0}]},
+   {sit:"がっこうの まわりの みちは、ひざ くらいまで みずが きて います。おむかえは まだ きません。",
+    q:"どう する？",
+    tip:"ひざ くらいの みずでも、こどもは ながされる ことが あるよ。",
+    c:[{t:"がっこうに のこって、おむかえを まつ",s:2},
+       {t:"みずが あさそうな みちを えらんで かえる",s:1},
+       {t:"ともだちと いっしょに、あるいて かえる",s:0}]},
+   {sit:"あめが やんで、かえれる ことに なりました。",
+    q:"かえりみちで きを つける ことは？",
+    tip:"あめが やんでも、マンホールや かわは まだ キケン！",
+    c:[{t:"みずたまり・マンホール・みぞに ちかづかない",s:2},
+       {t:"いつもの みちを、いそいで かえる",s:1},
+       {t:"かわが どう なったか、みに いく",s:0}]}
+  ]},
+ {id:"park",icon:"🌳",title:"こうえんに いるとき",desc:"かわの ちかくの こうえんで あそんで いる",
+  q:[
+   {sit:"こうえんで あそんで いたら あめが つよく なり、「<b>おおあめ けいほう</b>」が でました。",
+    q:"どう する？",
+    tip:"あめが つよく なったら、すぐ あそびを やめて かえろう！",
+    c:[{t:"すぐに あそぶのを やめて、いえか ちかくの たてものへ いく",s:2},
+       {t:"やねの ある ところで、あまやどり する",s:1},
+       {t:"あめが よわく なるまで、あそび つづける",s:0}]},
+   {sit:"「<b>けいかい レベル3</b>」が でました。こうえんの ちかくの かわ（のがわ など）の みずが ふえて います。",
+    q:"どう する？",
+    tip:"かわは「みに いかない・ちかづかない」が ルール！",
+    c:[{t:"すぐに かわから はなれて、たかい ばしょへ いく",s:2},
+       {t:"とおくから、かわの ようすを みる",s:1},
+       {t:"ちかくまで いって、かわを のぞく",s:0}]},
+   {sit:"「<b>けいかい レベル4</b>」が でました。こうえんの ひくい ところに みずが たまって きました。",
+    q:"どう する？",
+    tip:"みずが ふえると にげられなく なる。たかい みちで ひなんじょへ！",
+    c:[{t:"みずの ない たかい みちを とおって、ひなんじょへ いく",s:2},
+       {t:"やねの ある やすみばしょで まつ",s:1},
+       {t:"ちかみちに なる、かわ ぞいの みちを とおる",s:0}]},
+   {sit:"にげる とちゅう、あしもとに みずが きました。みずが にごって、したが みえません。",
+    q:"どう する？",
+    tip:"かさで あしもとを「つんつん」 たしかめながら、ゆっくり すすもう。",
+    c:[{t:"かさや ぼうで あしもとを たしかめながら、ゆっくり すすむ",s:2},
+       {t:"くつを ぬいで、はだしで あるく",s:1},
+       {t:"はしって、いっきに とおりぬける",s:0}]},
+   {sit:"<b>ひなんじょ</b>に つきました。",
+    q:"まず なにを する？",
+    tip:"うけつけを すると、かぞくが みつけやすく なるよ。もどらないこと！",
+    c:[{t:"うけつけを して、かぞくに いる ばしょを しらせる",s:2},
+       {t:"ぬれた まま やすむ",s:1},
+       {t:"いえの ようすを みに、もどる",s:0}]}
+  ]}
+];
+// 初級編のイラストは上級編と同じ場面を使用
+EASY.forEach((s,i)=>s.q.forEach((q,j)=>{ if(!q.scene) q.scene=HARD[i].q[j].scene; }));
+
+/* =========================================================
+   効果音（ブラウザ内で合成するため音声ファイル不要）
+   ========================================================= */
+const AU={ctx:null,on:true,timer:null};
+function audioInit(){
+  try{
+    if(!AU.ctx){
+      const C=window.AudioContext||window.webkitAudioContext; if(!C)return;
+      const ctx=AU.ctx=new C();
+      const len=ctx.sampleRate*2,buf=ctx.createBuffer(1,len,ctx.sampleRate),d=buf.getChannelData(0);
+      for(let i=0;i<len;i++)d[i]=Math.random()*2-1;
+      AU.noise=buf; AU.master=ctx.createGain(); AU.master.connect(ctx.destination);
+      const mk=(type,freq,q)=>{const s=ctx.createBufferSource();s.buffer=buf;s.loop=true;const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;const g=ctx.createGain();g.gain.value=0;s.connect(f);f.connect(g);g.connect(AU.master);s.start();return g;};
+      AU.rainG=mk("bandpass",2600,0.5);
+      AU.heavyG=mk("lowpass",900,0.7);
+      AU.waterG=mk("lowpass",320,1.2);
+      AU.deepG=mk("lowpass",140,2.0);
+    }
+    if(AU.ctx.state!=="running")AU.ctx.resume();
+  }catch(e){}
+}
+function setAmbient(rain,depth){
+  if(!AU.ctx)return; const t=AU.ctx.currentTime;
+  AU.rainG.gain.setTargetAtTime([0,.05,.10,.16,.24][rain],t,.6);
+  AU.heavyG.gain.setTargetAtTime([0,0,.05,.12,.22][rain],t,.6);
+  AU.waterG.gain.setTargetAtTime(depth>=40?.55:depth>=15?.3:0,t,.6);
+  AU.deepG.gain.setTargetAtTime(0,t,.3);
+  clearInterval(AU.timer);
+  if(rain>=3){AU.timer=setInterval(()=>{if(Math.random()<.55)thunder();},rain>=4?4500:7500);setTimeout(thunder,900);}
+}
+function stopAmbient(){if(!AU.ctx)return;clearInterval(AU.timer);const t=AU.ctx.currentTime;[AU.rainG,AU.heavyG,AU.waterG,AU.deepG].forEach(g=>g.gain.setTargetAtTime(0,t,.3));}
+function thunder(){
+  flash();
+  if(!AU.ctx)return; const ctx=AU.ctx,t=ctx.currentTime+.25;
+  const s=ctx.createBufferSource();s.buffer=AU.noise;const f=ctx.createBiquadFilter();f.type="lowpass";f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(120,t+2.5);
+  const g=ctx.createGain();g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.9,t+.05);g.gain.exponentialRampToValueAtTime(.001,t+3.2);
+  s.connect(f);f.connect(g);g.connect(AU.master);s.start(t);s.stop(t+3.3);
+}
+function flash(){const f=document.querySelector(".screen.active .flash");if(!f)return;f.classList.add("on");setTimeout(()=>f.classList.remove("on"),90);setTimeout(()=>f.classList.add("on"),180);setTimeout(()=>f.classList.remove("on"),260);}
+function tone(freq,start,dur,type="square",vol=.12){
+  const ctx=AU.ctx,o=ctx.createOscillator(),g=ctx.createGain();o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(0,start);g.gain.linearRampToValueAtTime(vol,start+.02);g.gain.setValueAtTime(vol,start+dur-.03);g.gain.linearRampToValueAtTime(0,start+dur);
+  o.connect(g);g.connect(AU.master);o.start(start);o.stop(start+dur);
+}
+function alarm(kind){
+  if(!AU.ctx)return; const t=AU.ctx.currentTime+.1;
+  if(kind==="l4"||kind==="l3"){const n=kind==="l4"?6:4;for(let i=0;i<n;i++){tone(i%2?740:990,t+i*.32,.3,"square",kind==="l4"?.13:.1);}}
+  else if(kind==="warn"){[880,880,880].forEach((f,i)=>tone(f,t+i*.4,.22,"sine",.18));}
+  else if(kind==="stop"){[660,880].forEach((f,i)=>tone(f,t+i*.25,.3,"sine",.12));}
+}
+function heartbeat(n){
+  if(!AU.ctx)return; const t=AU.ctx.currentTime+.05;
+  for(let i=0;i<n;i++){tone(60,t+i*.8,.12,"sine",.5);tone(55,t+i*.8+.22,.12,"sine",.4);}
+}
+function toggleSound(){
+  AU.on=!AU.on; document.getElementById("snd-btn").textContent=AU.on?"🔊 音あり":"🔇 消音";
+  if(AU.master)AU.master.gain.value=AU.on?1:0;
+  document.querySelectorAll("video").forEach(v=>v.muted=!AU.on);
+}
+
+/* =========================================================
+   イラスト（アニメーション付きSVG）
+   ========================================================= */
+const W=640,H=360,G=292;let UID=0;
+function rnd(seed){let x=Math.sin(seed)*10000;return x-Math.floor(x);}
+function sky(rain){
+  const top=["#7cc4f2","#8aa3b8","#5f7385","#3e4d5a","#232b33"][rain],bot=["#cfeaff","#b7c4cf","#8e9ba6","#66717b","#424a52"][rain];
+  return `<defs><linearGradient id="sk${UID}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${top}"/><stop offset="1" stop-color="${bot}"/></linearGradient>
+  <linearGradient id="wt${UID}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8a6a45" stop-opacity=".75"/><stop offset="1" stop-color="#5a4128" stop-opacity=".9"/></linearGradient></defs>
+  <rect width="${W}" height="${H}" fill="url(#sk${UID})"/>
+  ${rain>0?clouds(rain):'<circle cx="560" cy="60" r="34" fill="#ffe27a" opacity=".9"/>'}`;
+}
+function clouds(r){
+  let s="";for(let i=0;i<6;i++){const x=i*120-20,y=20+(i%2)*14;
+  s+=`<g fill="${r>2?'#2f3943':'#9aa6b1'}" opacity=".95"><ellipse cx="${x+60}" cy="${y+20}" rx="70" ry="28"/><ellipse cx="${x+20}" cy="${y+28}" rx="45" ry="22"/><ellipse cx="${x+105}" cy="${y+28}" rx="45" ry="22"/></g>`;}
+  return s;
+}
+function rainLines(r){
+  if(!r)return"";const n=[0,50,100,170,250][r];
+  let s=`<g class="rainfall" stroke="#d9ecff" stroke-width="${r>2?2.4:1.6}" opacity=".75" stroke-linecap="round" style="animation-duration:${[0,.7,.5,.38,.28][r]}s">`;
+  for(let i=0;i<n;i++){const x=rnd(i+1)*(W+120),y=rnd(i+99)*(H+120)-120,l=14+r*6;s+=`<line x1="${x}" y1="${y}" x2="${x-l*.35}" y2="${y+l}"/>`;}
+  return s+"</g>";
+}
+function ground(type){
+  if(type==="park")return `<rect y="${G}" width="${W}" height="${H-G}" fill="#5d9b4a"/>`;
+  return `<rect y="${G}" width="${W}" height="${H-G}" fill="#5c5f63"/><g stroke="#e9e9e9" stroke-width="4" stroke-dasharray="30 24"><line x1="0" y1="${G+36}" x2="${W}" y2="${G+36}"/></g>`;
+}
+function water(cm){
+  if(!cm)return"";const h=Math.max(6,cm*0.9);const y=G-h+(cm<=5?4:0);
+  const pts=Array.from({length:20},(_,i)=>`Q ${i*40+20} ${y-7} ${i*40+40} ${y}`).join(" ");
+  let w=`<g class="bob"><g class="wave ${cm>=30?'fast':''}"><path d="M0 ${y} ${pts} L800 ${H} L0 ${H}Z" fill="url(#wt${UID})"/>
+  <g stroke="#d8b98f" stroke-width="2" opacity=".6" fill="none">${[0,1,2,3].map(i=>`<path d="M${40+i*200} ${y+16} q20 -6 40 0 t40 0"/>`).join("")}</g></g></g>`;
+  if(cm>=10)w+=(LV==="easy"&&cur)?label(`ふかさ ${cm}cm`,W-150,y-40,"#0b5ea8"):label(`水深 約${cm}cm`,W-150,y-40,"#0b5ea8");
+  return w;
+}
+function label(t,x,y,c,blink){const w=t.length*17+24;return `<g class="${blink?'blink':''}"><rect x="${x}" y="${y}" width="${w}" height="34" rx="8" fill="${c}" stroke="#fff" stroke-width="2"/><text x="${x+w/2}" y="${y+23}" font-size="18" font-weight="bold" fill="#fff" text-anchor="middle">${t}</text></g>`;}
+const ALERT_EASY={warn:"おおあめ けいほう",l3:"けいかい レベル3",l4:"けいかい レベル4",stop:"あめが よわく なった"};
+function alertBox(k){
+  if(!k)return"";const a=Object.assign({},ALERT[k]);if(typeof LV!=="undefined"&&LV==="easy"&&cur)a.t=ALERT_EASY[k];const w=a.t.length*19+70;
+  return `<g class="${k==='l4'?'blink':''}"><rect x="14" y="14" width="${w}" height="46" rx="10" fill="${a.c}" stroke="#fff" stroke-width="3"/>
+  <text x="34" y="46" font-size="24" fill="#fff">${k==="stop"?"☂":"⚠"}</text>
+  <text x="62" y="45" font-size="21" font-weight="bold" fill="#fff">${a.t}</text></g>`;
+}
+function person(x,y,c="#ff8a00",s=1){
+  return `<g transform="translate(${x},${y}) scale(${s})"><circle cx="0" cy="-62" r="11" fill="#f2c9a0"/><rect x="-10" y="-50" width="20" height="30" rx="6" fill="${c}"/><rect x="-9" y="-22" width="7" height="22" fill="#2f3e4e"/><rect x="2" y="-22" width="7" height="22" fill="#2f3e4e"/></g>`;
+}
+function umbrella(x,y){return `<g transform="translate(${x},${y})"><path d="M-26 -78 Q0 -110 26 -78Z" fill="#e63946"/><line x1="0" y1="-80" x2="0" y2="-45" stroke="#333" stroke-width="2"/></g>`;}
+function house(){return `<g><rect x="360" y="150" width="190" height="142" fill="#f4e3c3" stroke="#8a6d45" stroke-width="3"/>
+  <polygon points="345,152 455,90 565,152" fill="#b5503b"/>
+  <rect x="380" y="170" width="44" height="36" fill="#ffe9a8" stroke="#8a6d45" stroke-width="3"/><rect x="480" y="170" width="44" height="36" fill="#bfe0f5" stroke="#8a6d45" stroke-width="3"/>
+  <line x1="360" y1="222" x2="550" y2="222" stroke="#8a6d45" stroke-width="2"/>
+  <rect x="380" y="236" width="44" height="34" fill="#bfe0f5" stroke="#8a6d45" stroke-width="3"/><rect x="480" y="238" width="38" height="54" fill="#8a5a33"/>
+  <text x="455" y="216" font-size="13" fill="#8a6d45" text-anchor="middle">2階</text><text x="455" y="286" font-size="13" fill="#8a6d45" text-anchor="middle">1階</text></g>`;}
+function office(){let s=`<g><rect x="370" y="50" width="200" height="242" fill="#cfd8e0" stroke="#61707e" stroke-width="3"/>`;
+  for(let r=0;r<5;r++)for(let c=0;c<4;c++)s+=`<rect x="${384+c*46}" y="${64+r*44}" width="34" height="28" fill="${(r+c)%3?'#8fc3e6':'#ffe9a8'}"/>`;
+  return s+`<rect x="448" y="258" width="44" height="34" fill="#61707e"/><text x="470" y="44" font-size="15" fill="#fff" text-anchor="middle">オフィス</text></g>`;}
+function school(){let s=`<g><rect x="280" y="140" width="320" height="152" fill="#f1ede3" stroke="#7d7464" stroke-width="3"/><rect x="410" y="100" width="60" height="42" fill="#f1ede3" stroke="#7d7464" stroke-width="3"/>
+  <circle cx="440" cy="121" r="15" fill="#fff" stroke="#333" stroke-width="2"/><line x1="440" y1="121" x2="440" y2="111" stroke="#333" stroke-width="2"/><line x1="440" y1="121" x2="448" y2="121" stroke="#333" stroke-width="2"/>`;
+  for(let r=0;r<3;r++)for(let c=0;c<6;c++)s+=`<rect x="${294+c*50}" y="${154+r*44}" width="34" height="28" fill="#a8d4ef"/>`;
+  return s+`</g><g><line x1="40" y1="${G}" x2="40" y2="200" stroke="#888" stroke-width="3"/><rect x="40" y="200" width="30" height="20" fill="#fff"/><circle cx="55" cy="210" r="6" fill="#d62828"/></g>`;}
+function car(x,y,stall){return `<g transform="translate(${x},${y})"><rect x="0" y="-48" width="170" height="40" rx="12" fill="#2b6cb0"/><path d="M30 -48 L55 -80 L120 -80 L145 -48Z" fill="#2b6cb0"/><path d="M40 -50 L60 -74 L86 -74 L86 -50Z M92 -50 L92 -74 L116 -74 L136 -50Z" fill="#cfe8ff"/>
+  <circle cx="38" cy="-6" r="16" fill="#222"/><circle cx="132" cy="-6" r="16" fill="#222"/><rect x="160" y="-40" width="10" height="8" fill="#ffe27a" class="${stall?'':'blink'}"/>
+  ${stall?`<g class="blink"><circle cx="70" cy="-110" r="22" fill="#fff" stroke="#d62828" stroke-width="3"/><text x="70" y="-102" font-size="24" text-anchor="middle" fill="#d62828" font-weight="bold">！</text><text x="100" y="-104" font-size="17" fill="#fff" font-weight="bold">エンジン停止</text></g>`:""}</g>`;}
+function underpass(){return `<g><rect x="0" y="${G}" width="${W}" height="${H-G}" fill="#5c5f63"/>
+  <path d="M0 ${G} L180 ${G} Q320 ${G+60} 460 ${G} L${W} ${G} L${W} ${H} L0 ${H}Z" fill="#4a4d51"/>
+  <rect x="220" y="150" width="200" height="30" fill="#8d939a"/><rect x="220" y="180" width="18" height="${G-150}" fill="#7a8087"/><rect x="402" y="180" width="18" height="${G-150}" fill="#7a8087"/>
+  <g class="bob"><path d="M185 ${G+4} Q320 ${G+62} 455 ${G+4}Z" fill="url(#wt${UID})"/><rect x="185" y="${G-34}" width="270" height="40" fill="url(#wt${UID})" opacity=".9"/></g>
+  ${LV==="easy"?label("みずで いっぱい！",240,200,"#d62828",true):label("冠水！ 深さ不明",250,200,"#d62828",true)}<g transform="translate(470,${G-60})"><rect width="12" height="60" fill="#888"/><polygon points="-20,0 32,0 6,-40" fill="#ffd60a" stroke="#333" stroke-width="2"/><text x="6" y="-8" font-size="22" text-anchor="middle" font-weight="bold">!</text></g></g>`;}
+function park(river){const rv=[0,18,30,46][river||0];
+  return `<g><rect x="0" y="${G-6}" width="${W}" height="10" fill="#4f8a3e"/>
+  <g class="wave ${river>=2?'fast':''}"><rect x="0" y="${G+18-rv/3}" width="800" height="${30+rv}" fill="#6a5a44"/>
+  <g stroke="#bfa57f" stroke-width="2" fill="none" opacity=".7">${[0,1,2,3,4].map(i=>`<path d="M${i*160} ${G+30} q20 -6 40 0 t40 0"/>`).join("")}</g></g>
+  <text x="20" y="${G+42}" font-size="14" fill="#fff">川</text>
+  ${[70,170,560].map(x=>`<rect x="${x-6}" y="${G-70}" width="12" height="70" fill="#7a5233"/><circle cx="${x}" cy="${G-90}" r="38" fill="#3f7d34"/>`).join("")}
+  <g transform="translate(330,${G})"><polygon points="-70,-90 0,-130 70,-90" fill="#8a5a33"/><rect x="-60" y="-90" width="8" height="90" fill="#8a5a33"/><rect x="52" y="-90" width="8" height="90" fill="#8a5a33"/><text x="0" y="-100" font-size="13" text-anchor="middle" fill="#fff">あずまや</text></g>
+  ${river>=2?(LV==="easy"?label("かわの みずが ふえてる",400,140,"#d62828",true):label("川の水位 上昇中",420,140,"#d62828",true)):""}</g>`;}
+function shelter(){return `<g><rect x="300" y="130" width="300" height="162" fill="#e9eef3" stroke="#5a6b7b" stroke-width="3"/><rect x="330" y="104" width="240" height="34" rx="6" fill="#1e9e5a"/><text x="450" y="128" font-size="20" font-weight="bold" fill="#fff" text-anchor="middle">指定避難所（イメージ）</text>
+  <rect x="420" y="218" width="60" height="74" fill="#5a6b7b"/><rect x="340" y="250" width="70" height="30" fill="#fff" stroke="#5a6b7b"/><text x="375" y="271" font-size="15" text-anchor="middle">受付</text></g>`;}
+function grandma(){return `<g transform="translate(200,${G})"><circle cx="0" cy="-66" r="13" fill="#f2c9a0"/><circle cx="0" cy="-82" r="9" fill="#ddd"/><path d="M-12 -52 Q0 -58 12 -52 L16 -10 L-16 -10Z" fill="#9b6ab0"/>
+  <rect x="-10" y="-12" width="7" height="12" fill="#555"/><rect x="3" y="-12" width="7" height="12" fill="#555"/><line x1="22" y1="-40" x2="26" y2="0" stroke="#6b4a2e" stroke-width="4"/><path d="M14 -40 Q22 -46 22 -40" stroke="#6b4a2e" stroke-width="4" fill="none"/>
+  <circle cx="-4" cy="-68" r="1.8" fill="#333"/><circle cx="5" cy="-68" r="1.8" fill="#333"/><path d="M-4 -60 Q0 -57 4 -60" stroke="#333" fill="none"/></g>
+  ${person(130,G,"#2a9d8f")}${label("おばあちゃん",150,G-150,"#9b6ab0")}`;}
+function hazardMap(){return `<g transform="translate(40,90)"><rect width="250" height="180" rx="10" fill="#fff" stroke="#333" stroke-width="3"/>
+  <rect x="0" y="0" width="250" height="30" rx="10" fill="#0b5ea8"/><text x="125" y="21" font-size="16" font-weight="bold" fill="#fff" text-anchor="middle">ハザードマップ（イメージ）</text>
+  <path d="M15 150 Q70 120 120 140 T235 120 L235 170 L15 170Z" fill="#f4a3c4"/><path d="M15 120 Q80 100 130 115 T235 95 L235 125 Q180 140 120 140 T15 150Z" fill="#ffe08a"/>
+  <path d="M15 158 Q90 140 235 150" stroke="#3a86ff" stroke-width="6" fill="none"/>
+  <rect x="160" y="45" width="22" height="22" fill="#1e9e5a"/><text x="171" y="62" font-size="13" fill="#fff" text-anchor="middle">避</text>
+  <circle cx="80" cy="128" r="8" fill="#d62828" class="blink"/><text x="80" y="110" font-size="12" text-anchor="middle">自宅</text>
+  <text x="20" y="60" font-size="11">■黄：浸水 0.5m未満</text><text x="20" y="76" font-size="11">■桃：浸水 0.5m以上</text><text x="20" y="92" font-size="11">■緑：避難所</text></g>`;}
+function breaker(){return `<g transform="translate(70,120)"><rect width="140" height="110" rx="8" fill="#eee" stroke="#555" stroke-width="3"/><text x="70" y="24" font-size="15" font-weight="bold" text-anchor="middle">ブレーカー</text>
+  ${[0,1,2,3].map(i=>`<rect x="${16+i*30}" y="40" width="20" height="50" fill="#ccc" stroke="#555"/><rect x="${18+i*30}" y="${i==0?68:44}" width="16" height="18" fill="${i==0?'#d62828':'#333'}"/>`).join("")}
+  <text x="70" y="104" font-size="12" text-anchor="middle" fill="#d62828">OFFのまま？</text></g>`;}
+function phone(){return `<g transform="translate(80,90)"><rect width="110" height="190" rx="16" fill="#222"/><rect x="8" y="22" width="94" height="146" fill="#e8f4ff"/>
+  <text x="55" y="70" font-size="30" font-weight="bold" text-anchor="middle" fill="#0b5ea8">171</text><text x="55" y="96" font-size="12" text-anchor="middle">災害用</text><text x="55" y="112" font-size="12" text-anchor="middle">伝言ダイヤル</text>
+  <text x="55" y="150" font-size="12" text-anchor="middle" fill="#d62828" class="blink">つながらない…</text></g>`;}
+
+function buildSVG(sc){
+  UID++;
+  let body="";
+  switch(sc.type){
+    case "house":body=ground()+house();break;
+    case "office":body=ground()+office();break;
+    case "school":body=ground()+school();break;
+    case "park":body=ground("park")+park(sc.river);break;
+    case "shelter":body=ground()+shelter()+person(250,G,"#2a9d8f");break;
+    case "underpass":body=underpass()+car(40,G,false);break;
+    case "car":body=ground()+car(220,G+20,sc.extra.includes("stall"));break;
+  }
+  let fg="";
+  if(sc.type==="house"&&!sc.extra.length)fg+=person(250,G)+(sc.rain?umbrella(250,G):"");
+  if(sc.type==="office"&&!sc.extra.length)fg+=person(260,G,"#264653");
+  if(sc.type==="school")fg+=person(220,G,"#e76f51",.8)+person(180,G,"#2a9d8f",.85);
+  if(sc.type==="park"&&!sc.extra.includes("walker"))fg+=person(230,G,"#e76f51",.85);
+  if(sc.extra.includes("walker"))fg+=person(230,G)+`<line x1="246" y1="${G-50}" x2="262" y2="${G+4}" stroke="#333" stroke-width="3"/>`;
+  if(sc.extra.includes("grandma"))fg+=grandma();
+  if(sc.extra.includes("hazard"))fg+=hazardMap();
+  if(sc.extra.includes("breaker"))fg+=breaker();
+  if(sc.extra.includes("phone"))fg+=phone();
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${sky(sc.rain)}${body}${fg}${water(sc.depth)}${rainLines(sc.rain)}${alertBox(sc.alert)}<rect class="flash" width="${W}" height="${H}" fill="#fff"/></svg>`;
+}
+
+/* =========================================================
+   ドキドキタイムのアニメーション
+   ========================================================= */
+// ① 洪水が押し寄せる（4秒）
+function floodSVG(){
+  UID++;
+  const top=G-30, pts=Array.from({length:22},(_,i)=>`Q ${i*40+20} ${top-12} ${i*40+40} ${top}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${sky(4)}${ground()}${house()}${person(250,G)}${umbrella(250,G)}
+  <g class="rise"><g class="wave fast"><path d="M0 ${top} ${pts} L880 ${H+420} L0 ${H+420}Z" fill="#6b4f32" opacity=".93"/>
+  <g stroke="#d8b98f" stroke-width="3" opacity=".7" fill="none">${[0,1,2,3,4].map(i=>`<path d="M${i*170} ${top+20} q25 -8 50 0 t50 0"/><path d="M${i*170+70} ${top+70} q25 -8 50 0 t50 0"/>`).join("")}</g></g>
+  <g fill="#8a5a33">${[[120,top+40],[420,top+90],[260,top+150]].map(([x,y])=>`<rect x="${x}" y="${y}" width="70" height="10" rx="4" transform="rotate(-12 ${x} ${y})"/>`).join("")}</g></g>
+  ${rainLines(4)}<rect class="flash" width="${W}" height="${H}" fill="#fff"/></svg>`;
+}
+// ② 生存（6秒）：救助ボートで生きのびる
+function happySVG(){
+  const wy=228, pts=Array.from({length:22},(_,i)=>`Q ${i*40+20} ${wy-8} ${i*40+40} ${wy}`).join(" ");
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="hs" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6ec1f5"/><stop offset="1" stop-color="#e6f6ff"/></linearGradient></defs>
+  <rect width="${W}" height="${H}" fill="url(#hs)"/>
+  <circle cx="540" cy="70" r="38" fill="#ffd84d"/>
+  <g class="fadein" fill="none" stroke-width="9" opacity=".85">${["#e63946","#f4a261","#ffd60a","#52b788","#3a86ff","#7b2cbf"].map((c,i)=>`<path d="M60 ${wy} A ${250-i*9} ${200-i*9} 0 0 1 ${560-i*18} ${wy}" stroke="${c}"/>`).join("")}</g>
+  <rect width="${W}" height="${H}" fill="#2a333c" class="fadeout"/>
+  <g><polygon points="40,${wy} 100,${wy-50} 160,${wy}" fill="#b5503b"/><polygon points="470,${wy} 540,${wy-60} 610,${wy}" fill="#7d5a3c"/><rect x="200" y="${wy-30}" width="60" height="30" fill="#cfd8e0"/></g>
+  <g class="wave"><path d="M0 ${wy} ${pts} L880 ${H} L0 ${H}Z" fill="#7a6a52"/>
+  <g stroke="#cbb795" stroke-width="2" fill="none" opacity=".7">${[0,1,2,3,4].map(i=>`<path d="M${i*170} ${wy+30} q25 -6 50 0 t50 0"/>`).join("")}</g></g>
+  <g class="drift"><g class="rock">
+    <g transform="translate(230,${wy+6})">
+      ${person(0,-4,"#ff8a00")}
+      <rect x="-12" y="-54" width="24" height="26" rx="5" fill="#ff5400" stroke="#fff" stroke-width="2"/>
+      <g class="waveArm"><rect x="9" y="-58" width="6" height="26" rx="3" fill="#f2c9a0" transform="rotate(-150 12 -45)"/></g>
+      <path d="M-14 -66 Q0 -58 14 -66" stroke="#333" stroke-width="2" fill="none"/>
+      ${person(50,-4,"#264653",.9)}<rect x="40" y="-50" width="20" height="22" rx="5" fill="#ff5400"/>
+      <path d="M-70 -18 L110 -18 L90 12 L-55 12Z" fill="#f4f4f4" stroke="#2b6cb0" stroke-width="4"/>
+      <text x="20" y="4" font-size="14" font-weight="bold" fill="#2b6cb0" text-anchor="middle">救助ボート</text>
+    </g></g></g>
+  </svg>`;
+}
+// ③ サバイバル失敗（6秒）：濁流の中で気を失い、魚たちと漂う
+function badSVG(){
+  const fish=(y,c,dur,delay,dir,s)=>`<g class="${dir}" style="animation-duration:${dur}s;animation-delay:-${delay}s"><g transform="translate(0,${y}) scale(${dir==='swimL'?-s:s},${s})">
+    <ellipse cx="0" cy="0" rx="22" ry="10" fill="${c}"/><polygon points="-20,0 -36,-10 -36,10" fill="${c}"/><circle cx="12" cy="-3" r="2.5" fill="#111"/></g></g>`;
+  const bub=(x,r,dur,delay)=>`<circle class="bubble" cx="${x}" cy="${H+10}" r="${r}" fill="none" stroke="#cfe3d0" stroke-width="1.5" style="animation-duration:${dur}s;animation-delay:-${delay}s"/>`;
+  return `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="uw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b6a3c"/><stop offset=".5" stop-color="#3d4a2c"/><stop offset="1" stop-color="#151b10"/></linearGradient>
+  <radialGradient id="vg" cx=".5" cy=".5" r=".7"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".85"/></radialGradient></defs>
+  <rect width="${W}" height="${H}" fill="url(#uw)"/>
+  <g fill="#e8e3b0">${[[120,60],[300,90],[470,50]].map(([x,w],i)=>`<polygon class="sway" style="animation-delay:${i*.7}s" points="${x},0 ${x+w},0 ${x+w*2.2},${H} ${x+w*.6},${H}"/>`).join("")}</g>
+  <g fill="#4a3a26" opacity=".8"><rect x="60" y="300" width="90" height="10" rx="4" transform="rotate(18 60 300)"/><rect x="480" y="80" width="70" height="8" rx="4" transform="rotate(-25 480 80)"/></g>
+  ${fish(90,"#d9a441",7,1,"swimR",1)}${fish(250,"#9fb7c9",9,4,"swimL",1.2)}${fish(150,"#c9774f",6,3,"swimL",.8)}${fish(300,"#a3b86b",8,6,"swimR",.9)}${fish(60,"#d9d4c0",10,2,"swimL",.7)}
+  <g class="float"><g transform="translate(300,180)"><g class="spin">
+    <g transform="rotate(-70)">
+      <rect x="-10" y="-50" width="20" height="30" rx="6" fill="#ff8a00"/><rect x="-9" y="-22" width="7" height="24" fill="#2f3e4e"/><rect x="2" y="-22" width="7" height="24" fill="#2f3e4e" transform="rotate(14 5 -22)"/>
+      <rect x="-24" y="-48" width="14" height="6" rx="3" fill="#f2c9a0" transform="rotate(-30 -10 -45)"/><rect x="10" y="-48" width="14" height="6" rx="3" fill="#f2c9a0" transform="rotate(40 10 -45)"/>
+      <circle cx="0" cy="-62" r="11" fill="#e9d2b8"/>
+      <path d="M-6 -64 l4 0 M2 -64 l4 0" stroke="#333" stroke-width="2"/><path d="M-3 -57 q3 2 6 0" stroke="#333" stroke-width="1.5" fill="none"/>
+    </g></g></g>
+    <g fill="#fff" opacity=".9" font-size="18" font-weight="bold"><text x="330" y="120">…</text></g></g>
+  ${[60,140,230,310,360,420,500,580].map((x,i)=>bub(x,3+(i%3)*2,3+(i%4),i*.6)).join("")}
+  <rect width="${W}" height="${H}" fill="url(#vg)"/>
+  <rect width="${W}" height="${H}" fill="#000" class="darken"/>
+  </svg>`;
+}
+
+function playVideo(el,src,onfail){
+  el.innerHTML=`<video playsinline preload="auto" src="${src}"></video>`;
+  const v=el.querySelector("video"); v.muted=!AU.on; v.onerror=onfail;
+  const p=v.play(); if(p&&p.catch)p.catch(()=>{v.muted=true;v.play().catch(()=>{});});
+}
+let dramaTimers=[];
+function playDrama(pass,done){
+  dramaTimers.forEach(clearTimeout); dramaTimers=[];
+  const T=UI[LV];
+  const el=document.getElementById("d-scene"),cap=document.getElementById("d-cap"),title=document.getElementById("d-title");
+  title.innerHTML=rb(T.fate); title.className="drama-title beat"; cap.innerHTML="";
+  go("s-drama",true);
+  // ① 洪水（5秒）
+  const floodAnim=()=>{el.innerHTML=floodSVG();if(AU.ctx){const t=AU.ctx.currentTime;AU.rainG.gain.setTargetAtTime(.25,t,.3);AU.heavyG.gain.setTargetAtTime(.3,t,.3);AU.waterG.gain.setTargetAtTime(.9,t,1.5);}setTimeout(thunder,600);setTimeout(thunder,2600);heartbeat(5);};
+  if(VIDEOS.flood){stopAmbient();playVideo(el,VIDEOS.flood,floodAnim);} else floodAnim();
+  // ② 生存／サバイバル失敗（6秒）
+  dramaTimers.push(setTimeout(()=>{
+    title.className="drama-title";
+    title.innerHTML=rb(pass?T.saved:T.lost);
+    cap.innerHTML=`<span>${rb(pass?T.capOK:T.capNG)}</span>`;
+    const anim=()=>{
+      el.innerHTML=pass?happySVG():badSVG();
+      if(AU.ctx){const t=AU.ctx.currentTime;clearInterval(AU.timer);
+        AU.rainG.gain.setTargetAtTime(0,t,.4);AU.heavyG.gain.setTargetAtTime(0,t,.4);
+        if(pass){AU.waterG.gain.setTargetAtTime(.12,t,.8);[523,659,784,659,784,1047].forEach((f,i)=>tone(f,t+.4+i*.22,.3,"triangle",.12));}
+        else{AU.waterG.gain.setTargetAtTime(0,t,.3);AU.deepG.gain.setTargetAtTime(.9,t,.5);[110,104,98].forEach((f,i)=>tone(f,t+.3+i*1.6,1.5,"sine",.25));}
+      }
+    };
+    const v=VIDEOS[pass?"happy":"bad"];
+    if(v){stopAmbient();playVideo(el,v,anim);} else anim();
+  },DRAMA_FLOOD_MS));
+  // ③ 結果画面へ（合計10秒）
+  dramaTimers.push(setTimeout(()=>{stopAmbient();done();},DRAMA_FLOOD_MS+DRAMA_END_MS));
+}
+
+function showScene(el,sc,videoSrc){
+  el.classList.toggle("shake",sc.depth>=40&&sc.rain>=4);
+  if(videoSrc){
+    el.innerHTML=`<video playsinline loop preload="auto" src="${videoSrc}"></video>`;
+    const v=el.querySelector("video");
+    v.muted=!AU.on;
+    v.onerror=()=>{el.innerHTML=buildSVG(sc);setAmbient(sc.rain,sc.depth);alarm(sc.alert);};
+    stopAmbient();
+    const p=v.play(); if(p&&p.catch)p.catch(()=>{v.muted=true;v.play().catch(()=>{});});
+  }else{
+    el.innerHTML=buildSVG(sc);
+    setAmbient(sc.rain,sc.depth); alarm(sc.alert);
+  }
+}
+
+/* =========================================================
+   画面制御
+   ========================================================= */
+let LV="easy",DATA=EASY,cur=null,idx=0,answers=[],order=[];
+function go(id,keepSound){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo(0,0);
+  document.querySelectorAll(".screen:not(.active) video").forEach(v=>v.pause());
+  if(id!=="s-drama"){dramaTimers.forEach(clearTimeout);dramaTimers=[];}
+  if(id!=="s-quiz"&&!keepSound)stopAmbient();
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+document.getElementById("hero").innerHTML=buildSVG({type:"house",rain:4,depth:30,alert:"warn",extra:[]});
+
+function chooseLevel(lv){
+  audioInit();
+  LV=lv; DATA=lv==="easy"?EASY:HARD; const T=UI[lv];
+  const tag=document.getElementById("sel-tag"); tag.innerHTML=rb(T.tag); tag.style.background=T.tagc;
+  document.getElementById("sel-h").innerHTML=rb(T.selH);
+  document.getElementById("sel-sub").innerHTML=rb(T.selSub);
+  document.getElementById("sel-back").innerHTML=rb(T.back);
+  document.getElementById("r-h3").innerHTML=rb(T.h3);
+  document.getElementById("r-again").innerHTML=rb(T.again);
+  document.getElementById("r-top").innerHTML=rb(T.top);
+  document.getElementById("sc-grid").innerHTML=DATA.map((s,i)=>
+    `<button class="sc-btn" onclick="startQuiz(${i})"><div class="ic">${s.icon}</div><div class="t">${rb(s.title)}</div><div class="d">${rb(s.desc)}</div></button>`).join("");
+  go("s-select");
+}
+function startQuiz(i){audioInit();cur=DATA[i];idx=0;answers=[];go("s-quiz");render();}
+function render(){
+  const q=cur.q[idx],T=UI[LV];
+  document.getElementById("q-sc").innerHTML=`${cur.icon} ${rb(cur.title)}`;
+  document.getElementById("q-no").innerHTML=rb(T.qno(idx+1,cur.q.length));
+  document.getElementById("q-bar").style.width=`${idx/cur.q.length*100}%`;
+  showScene(document.getElementById("q-scene"),q.scene,VIDEOS[`${cur.id}-${idx+1}`]);
+  document.getElementById("q-sit").innerHTML=rb(q.sit);
+  document.getElementById("q-text").innerHTML="Q. "+rb(q.q);
+  const lbs=["A","B","C","D"];
+  order=shuffle(q.c.map((_,k)=>k));
+  document.getElementById("q-choices").innerHTML=order.map((ci,k)=>
+    `<button class="choice" data-i="${ci}"><span class="lb">${lbs[k]}</span>${rb(q.c[ci].t)}</button>`).join("");
+  document.querySelectorAll(".choice").forEach(b=>b.onclick=()=>pick(+b.dataset.i));
+  window.scrollTo(0,0);
+}
+function pick(ci){
+  audioInit();
+  const c=cur.q[idx].c[ci];
+  answers.push({s:c.s,t:c.t});
+  idx++;
+  if(idx<cur.q.length)render(); else showResult();
+}
+function showResult(){
+  const T=UI[LV];
+  const score=answers.reduce((a,x)=>a+x.s*10,0); // ○20点・△10点・×0点 × 5問 = 100点
+  const pass=score>=60;
+  const head=document.getElementById("r-head");
+  head.className="result-head "+(pass?"pass":"fail");
+  head.innerHTML=`<div style="font-size:20px">${cur.icon} ${rb(cur.title)}</div>
+   <div class="score">${score}<small> / 100${rb(T.unit)}</small></div>
+   <div class="verdict">${rb(pass?(score===100?T.perfect:T.ok):T.ng)}</div>
+   <div class="warn">${rb(pass?T.okMsg:T.ngMsg)}</div>`;
+  const mk={2:["g","○"],1:["m","△"],0:["b","×"]};
+  document.getElementById("r-list").innerHTML=cur.q.map((q,i)=>{
+    const a=answers[i],best=q.c.find(c=>c.s===2).t,[cls,sym]=mk[a.s];
+    return `<div class="rv"><div class="mk ${cls}">${sym}</div><div>
+      <b>${rb(T.q)}${i+1}${rb(T.qq)}：</b>${rb(T.ans)}「${rb(a.t)}」（${a.s*10}${rb(T.unit)}）<br>
+      ${a.s===2?`<span style="color:#1e9e5a">${rb(T.correct)}</span> ${rb(q.tip)}`:`<span class="adv">▶ ${rb(T.best)}${LV==="easy"?" ":"："}「${rb(best)}」</span><br>${LV==="easy"?"💡 ":""}${rb(q.tip)}`}
+    </div></div>`;}).join("");
+  document.getElementById("q-bar").style.width="100%";
+  playDrama(pass,()=>{
+    go("s-result");
+    if(AU.ctx){const t=AU.ctx.currentTime+.1;(pass?[523,659,784,1047]:[392,330,262]).forEach((f,i)=>tone(f,t+i*.18,.25,"sine",.15));}
+  });
+}
+</script>
+</body>
+</html>
